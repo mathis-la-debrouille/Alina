@@ -25,7 +25,7 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         source: "backend/*"
-        target: "/home/ubuntu/backend/"
+        target: "/home/ubuntu/alina/"
 
     - name: Setup or restart backend service
       uses: appleboy/ssh-action@v0.1.8
@@ -42,7 +42,7 @@ jobs:
 
             [Service]
             ExecStart=/usr/bin/npm run start
-            WorkingDirectory=/home/ubuntu/backend
+            WorkingDirectory=/home/ubuntu/alina/backend
             Restart=always
             User=ubuntu
             Environment=NODE_ENV=production
