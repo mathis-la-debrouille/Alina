@@ -46,7 +46,7 @@ jobs:
             Restart=always
             User=ubuntu
             Environment=NODE_ENV=production
-            Environment=PORT=3300
+            Environment=PORT=443
 
             [Install]
             WantedBy=multi-user.target" | sudo tee /etc/systemd/system/backend.service

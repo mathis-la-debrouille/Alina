@@ -12,8 +12,8 @@ fastify.get('/', async (request, reply) => {
 // Démarrage du serveur
 const start = async () => {
   try {
-    await fastify.listen({ port: 3300, host: '0.0.0.0' });
-    console.log('Server is listening on http://localhost:3300');
+    await fastify.listen({ port: 443, host: '0.0.0.0' });
+    console.log('Server is listening on http://localhost:443');
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
