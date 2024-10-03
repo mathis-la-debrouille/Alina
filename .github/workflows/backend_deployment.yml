@@ -35,6 +35,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           # Créer le service systemd si non existant
+          sudo -su root
           if [ ! -f /etc/systemd/system/backend.service ]; then
             echo "[Unit]
             Description=Backend Service
