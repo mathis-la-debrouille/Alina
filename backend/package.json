@@ -10,8 +10,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@fastify/multipart": "^9.0.1",
+    "@google-cloud/speech": "^6.7.0",
+    "aws-sdk": "^2.1691.0",
+    "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "fastify": "^5.0.0",
+    "openai": "^4.67.1",
     "sqlite3": "^5.1.7"
   }
 }

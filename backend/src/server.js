@@ -1,9 +1,11 @@
 // server.js
 const fastify = require('fastify')({ logger: true });
 const alinasRoutes = require('./routes/alinas');
+const askRoutes = require('./routes/askRoute');  // Import de la route /ask
 
 // Enregistrer les routes
 fastify.register(alinasRoutes);
+fastify.register(askRoutes);  // Enregistrer la route /ask
 
 fastify.get('/', async (request, reply) => {
   reply.send({ status: 'Server is up and running!' });
