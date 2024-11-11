@@ -1,17 +1,17 @@
 // server.js
 const fastify = require('fastify')({ logger: true });
 const alinasRoutes = require('./routes/alinas');
-const askRoutes = require('./routes/askRoute');  // Import de la route /ask
+const askRoutes = require('./routes/askRoute');
+const userRoutes = require('./routes/userRoutes');
 
-// Enregistrer les routes
 fastify.register(alinasRoutes);
-fastify.register(askRoutes);  // Enregistrer la route /ask
+fastify.register(askRoutes);
+fastify.register(userRoutes);
 
 fastify.get('/', async (request, reply) => {
   reply.send({ status: 'Server is up and running!' });
 });
 
-// Démarrage du serveur
 const start = async () => {
   try {
     await fastify.listen({ port: 3300, host: '127.0.0.1' });
@@ -22,5 +22,4 @@ const start = async () => {
   }
 };
 
-// Lancement du serveur
 start();
