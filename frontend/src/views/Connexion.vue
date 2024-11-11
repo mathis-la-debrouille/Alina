@@ -13,13 +13,14 @@
       </q-form-item>
 
       <q-button @click="handleSubmitClick">Login</q-button>
-      <q-button @click="handleResetClick" theme="secondary">Sign up</q-button>
+      <q-button @click="redirectToSignUp" theme="secondary">Sign up</q-button>
     </q-form>
   </div>
 </template>
 
 <script>
 import { defineComponent, ref, reactive } from 'vue';
+import { useRouter } from 'vue-router';
 
 const model = {
   name: '',
@@ -45,6 +46,7 @@ export default defineComponent({
     const form = ref(null);
     const formModel = reactive(model);
     const rules = reactive(defaultRules);
+    const router = useRouter();
 
     const handleSubmitClick = async () => {
       const valid = await form?.value?.validate();
@@ -57,8 +59,8 @@ export default defineComponent({
       }
     };
 
-    const handleResetClick = () => {
-      form?.value?.resetFields();
+    const redirectToSignUp = () => {
+      router.push('/sign-up');
     };
 
     return {
@@ -66,7 +68,7 @@ export default defineComponent({
       formModel,
       rules,
       handleSubmitClick,
-      handleResetClick,
+      redirectToSignUp,
     };
   }
 });

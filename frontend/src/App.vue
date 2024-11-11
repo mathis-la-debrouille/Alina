@@ -13,5 +13,9 @@ export default {
 <style>
 @import '@qvant/qui-max/styles';
 
+
+body {
+    overflow: hidden; /* Hide scrollbars */
+}
 /* Global styles */
 </style>

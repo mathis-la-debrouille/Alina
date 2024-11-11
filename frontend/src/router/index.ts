@@ -2,12 +2,18 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Prompt from '../views/Prompt.vue';
 import NotFound from '../views/NotFound.vue';
 import Connexion from '../views/Connexion.vue';
+import SignupPage from '../views/SignUp.vue';
 
 const routes = [
   {
     path: '/',
     name: 'Connexion',
     component: Connexion,
+  },
+  {
+    path: '/sign-up',
+    name: 'SignupPage',
+    component: SignupPage,
   },
   {
     path: '/prompt',

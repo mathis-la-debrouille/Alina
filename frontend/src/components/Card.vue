@@ -4,10 +4,10 @@
     <q-collapse-item :title="question" name="question">
       <p class="answer">{{ answer }}</p>
       <audio controls>
-        <source :src="audioSrc" type="audio/mpeg" />
+        <source :src="audioSrc" type="audio/wav" />
         Your browser does not support the audio element.
       </audio>
--    </q-collapse-item>
+    </q-collapse-item>
   </q-collapse>
 </template>
 
