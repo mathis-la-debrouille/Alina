@@ -18,8 +18,9 @@
       "webpack-env"
     ],
     "paths": {
+      "#/*": ["./src/types/*"],
       "@/*": [
-        "src/*"
+        "./src/*"
       ]
     },
     "lib": [

@@ -11,5 +11,7 @@ export default {
 </script>
 
 <style>
+@import '@qvant/qui-max/styles';
+
 /* Global styles */
 </style>
