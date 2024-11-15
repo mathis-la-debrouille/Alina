@@ -3,49 +3,56 @@ const bcrypt = require('bcryptjs');
 const { generateToken, authenticate, authorizeAdmin } = require('../auth');
 
 async function userRoutes(fastify, options) {
-  // Signup route
-    fastify.post('/signup', async (request, reply) => {
+ // Signup route
+  fastify.post('/signup', async (request, reply) => {
     const { firstname, email, password, alina_id } = request.body;
 
     if (!firstname || !email || !password || !alina_id) {
-        return reply.status(400).send({ error: 'Missing required fields' });
+      return reply.status(400).send({ error: 'Missing required fields' });
     }
 
     const hashedPassword = bcrypt.hashSync(password, 10);
     const role = 'simple'; // Default role for new users
 
     try {
-        // Wrap db.run in a Promise
-        const userId = await new Promise((resolve, reject) => {
+      // Wrap db.run in a Promise
+      const userId = await new Promise((resolve, reject) => {
         db.run(
-            "INSERT INTO users (firstname, email, password, alina_id, role) VALUES (?, ?, ?, ?, ?)",
-            [firstname, email, hashedPassword, alina_id, role],
-            function (err) {
+          "INSERT INTO users (firstname, email, password, alina_id, role) VALUES (?, ?, ?, ?, ?)",
+          [firstname, email, hashedPassword, alina_id, role],
+          function (err) {
             if (err) reject(err);
             else resolve(this.lastID);
-            }
+          }
         );
-        });
+      });
 
-        // Generate a token for the new user
-        const token = generateToken({ id: userId, firstname, role });
+      // Generate a token for the new user
+      const token = generateToken({ id: userId, firstname, role });
 
-        // Send a response with the token and user info
-        return reply.send({
+      // Send a response with the token and user info
+      return reply.send({
         message: 'User created successfully',
         token,
+        id: userId,
         user: {
-            id: userId,
-            firstname,
-            email,
-            role
+          id: userId,
+          firstname,
+          email,
+          role
         }
-        });
+      });
     } catch (error) {
-        console.error('Error creating user:', error);
-        return reply.status(500).send({ error: 'User already exists' });
+      // Check if the error is due to a unique constraint violation on the email field
+      if (error.code === 'SQLITE_CONSTRAINT' && error.message.includes('UNIQUE constraint failed: users.email')) {
+        return reply.status(409).send({ error: 'Email already exists. Please use a different email.' });
+      }
+      
+      console.error('Error creating user:', error);
+      return reply.status(500).send({ error: 'An error occurred during user creation' });
     }
-    });
+  });
+
 
 
   // Login route
@@ -69,7 +76,7 @@ async function userRoutes(fastify, options) {
       }
 
       const token = generateToken(user);
-      return reply.send({ token });
+      return reply.send({ token, id:user.id });
     } catch (error) {
       console.error('Database error:', error);
       return reply.status(500).send({ error: 'An error occurred while processing your request' });
@@ -227,16 +234,21 @@ async function userRoutes(fastify, options) {
     });
 
     // Get asks for the logged-in user
-    fastify.get('/user/asks', { preHandler: [authenticate] }, async (request, reply) => {
-    const { id } = request.user;
+    fastify.get('/user/:userId/asks', { preHandler: [authenticate] }, async (request, reply) => {
+    const { id } = request.params;
+
+
+    console.log("HEYEGHE")
 
     try {
         const asks = await new Promise((resolve, reject) => {
-        db.all("SELECT * FROM asks WHERE user_id = ?", [id], (err, rows) => {
+        db.all("SELECT * FROM asks", (err, rows) => {
             if (err) reject(err);
             else resolve(rows);
         });
         });
+
+        console.log(asks)
 
         return reply.send({ asks });
     } catch (error) {
@@ -245,6 +257,36 @@ async function userRoutes(fastify, options) {
     }
     });
 
+
+    // Get user by ID, accessible by the user themselves or an admin
+    fastify.get('/user/:userId', { preHandler: [authenticate] }, async (request, reply) => {
+      const { userId } = request.params;
+      const { id: requesterId, role } = request.user; // Extract user ID and role from the token
+
+      // Check if the requester is either an admin or the user themselves
+      if (role !== 'admin' && parseInt(userId) !== requesterId) {
+        return reply.status(403).send({ error: 'Access denied' });
+      }
+
+      try {
+        const user = await new Promise((resolve, reject) => {
+          db.get("SELECT id, firstname, email, role, alina_id, alina_config FROM users WHERE id = ?", [userId], (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+          });
+        });
+
+        // If user not found
+        if (!user) {
+          return reply.status(404).send({ error: 'User not found' });
+        }
+
+        return reply.send(user);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        return reply.status(500).send({ error: 'Failed to retrieve user' });
+      }
+    });
 }
 
 module.exports = userRoutes;

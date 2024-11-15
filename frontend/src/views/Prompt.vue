@@ -3,8 +3,8 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <h2>Alina infos</h2>
-      <p>ID: 667389263</p>
-      <p>Name: Alina de tom</p>
+      <p>ID: {{ userData.alina_id }}</p>
+      <p>Name: Alina de {{ userData.firstname }}</p>
       <p>Region: France</p>
 
       <h2>Options</h2>
@@ -48,8 +48,14 @@
           :key="index"
           :question="item.question"
           :answer="item.answer"
-          :audioSrc="item.audioSrc"
+          :audioSrc="item.audio_response_s3_url"
         />
+      </div>
+
+      <!-- Loading Indicator -->
+      <div v-if="loading" class="loading-indicator">
+        <q-button type="icon" icon="q-icon-hourglass" />
+        <span>Waiting for response...</span>
       </div>
 
       <!-- Prompt Section at the Bottom -->
@@ -84,8 +90,9 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { getUser, getUserAsks, postAsk } from '@/apiService';
 import Card from '@/components/Card.vue';
 
 export default {
@@ -95,17 +102,25 @@ export default {
   },
   setup() {
     const router = useRouter();
+    const userData = reactive({
+      alina_id: '',
+      firstname: '',
+      email: '',
+      alina_config: {
+        accent: '',
+        gender: '',
+        age: ''
+      }
+    });
 
-    // Cascader model values
     const selectedAccent = ref(null);
     const selectedGender = ref(null);
     const selectedAge = ref(null);
 
-    // Options for each Cascader
     const accentOptions = [
-      { label: 'French', value: 'fr' },
-      { label: 'English', value: 'en' },
-      { label: 'Spanish', value: 'es' }
+      { label: 'French', value: 'french' },
+      { label: 'English', value: 'english' },
+      { label: 'Spanish', value: 'spanish' }
     ];
 
     const genderOptions = [
@@ -118,23 +133,9 @@ export default {
       { label: 'Old', value: 'old' }
     ];
 
-    // Feed data for QCards
-    const feedData = ref([
-      {
-        question: 'What is the capital of France?',
-        answer: 'The capital of France is Paris.',
-        audioSrc: '/Users/mathislaurent/Documents/Perso/Alina/backend/decoded_audio.wav'
-      },
-      {
-        question: 'What is the largest planet?',
-        answer: 'The largest planet is Jupiter.',
-        audioSrc: 'path/to/audio2.mp3'
-      }
-    ]);
-
+    const feedData = ref([]);
     const userPrompt = ref("");
-
-    // Settings modal state and data
+    const loading = ref(false); // Loading state
     const showSettingsModal = ref(false);
     const settings = reactive({
       alinaId: '',
@@ -142,28 +143,72 @@ export default {
       email: ''
     });
 
-    const submitPrompt = () => {
-      console.log("Prompt submitted:", userPrompt.value);
+    onMounted(async () => {
+      await fetchUserData();
+      await fetchUserAsks();
+    });
+
+    const fetchUserData = async () => {
+      try {
+        const userId = parseInt(localStorage.getItem('userId'), 10); // Replace with actual user ID if necessary
+        const userResponse = await getUser(userId);
+        Object.assign(userData, userResponse.data);
+
+        const config = JSON.parse(userData.alina_config);
+        selectedAccent.value = config.accent;
+        selectedGender.value = config.gender;
+        selectedAge.value = config.age;
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        router.push('/'); // Redirect to login if error occurs
+      }
     };
 
-    // Open settings modal
+    const fetchUserAsks = async () => {
+      const userId = parseInt(localStorage.getItem('userId'), 10); // Replace with actual user ID if necessary
+      console.log(userId)
+      try {
+        const asksResponse = await getUserAsks(userId);
+        console.log(asksResponse)
+        feedData.value = asksResponse.data.asks;
+      } catch (error) {
+        console.error("Failed to fetch asks:", error);
+      }
+    };
+
+    const submitPrompt = async () => {
+      if (!userPrompt.value) return;
+      loading.value = true; // Show loading indicator
+      try {
+        await postAsk({
+          prompt: userPrompt.value,
+          withVocalAnswer: true // Adjust if you want this to be dynamic
+        });
+        userPrompt.value = ""; // Clear input after submission
+        await fetchUserAsks(); // Refresh the feed after adding a new ask
+      } catch (error) {
+        console.error("Failed to submit prompt:", error);
+        alert("An error occurred while submitting your prompt.");
+      } finally {
+        loading.value = false; // Hide loading indicator
+      }
+    };
+
     const openSettings = () => {
       showSettingsModal.value = true;
     };
 
-    // Close settings modal
     const closeSettings = () => {
       showSettingsModal.value = false;
     };
 
-    // Save settings
     const saveSettings = () => {
       console.log("Settings saved:", settings);
       closeSettings();
     };
 
-    // Disconnect handler
     const disconnect = () => {
+      localStorage.removeItem('token');
       router.push('/');
     };
 
@@ -177,12 +222,14 @@ export default {
       feedData,
       userPrompt,
       submitPrompt,
+      loading, // Export loading state
       disconnect,
       showSettingsModal,
       openSettings,
       closeSettings,
       saveSettings,
-      settings
+      settings,
+      userData
     };
   }
 };
@@ -235,6 +282,16 @@ export default {
   gap: 10px;
   padding: 10px;
   border-top: 1px solid #ddd;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.loading-indicator span {
+  margin-left: 5px;
 }
 
 /* Modal Overlay */

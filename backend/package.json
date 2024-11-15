@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@fastify/cors": "^10.0.1",
     "@fastify/multipart": "^9.0.1",
     "@google-cloud/speech": "^6.7.0",
     "aws-sdk": "^2.1691.0",

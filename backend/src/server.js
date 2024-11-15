@@ -3,7 +3,13 @@ const fastify = require('fastify')({ logger: true });
 const alinasRoutes = require('./routes/alinas');
 const askRoutes = require('./routes/askRoute');
 const userRoutes = require('./routes/userRoutes');
+const cors = require('@fastify/cors');
 
+fastify.register(cors, {
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+});
 fastify.register(alinasRoutes);
 fastify.register(askRoutes);
 fastify.register(userRoutes);

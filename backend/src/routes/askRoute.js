@@ -2,35 +2,62 @@
 const { askChatGPT, askForVocal } = require('../asksystem'); // Import du module asksystem.js
 const { transcribeAudio } = require('../audioService'); // Import audio transcription service
 const fastifyMultipart = require('@fastify/multipart');
+const { authenticate } = require('../auth'); // Import the authenticate middleware
+const db = require('../db');
 
 async function askRoutes(fastify, options) {
   // Register the multipart plugin for file uploads
   fastify.register(fastifyMultipart);
 
   // Route for interacting with ChatGPT
-  fastify.post('/ask', async (request, reply) => {
+  fastify.post('/ask', { preHandler: [authenticate] }, async (request, reply) => {
     const { prompt, withVocalAnswer } = request.body;
+    const userId = request.user.id; // Extract user ID from the token
 
     if (!prompt) {
       return reply.status(400).send({ error: 'Prompt is required' });
     }
 
-    if (!withVocalAnswer) {
-      try {
-        const gptResponse = await askChatGPT(prompt);
-        return reply.send({ response: gptResponse });
-      } catch (error) {
-        console.error('Error during GPT request:', error);
-        return reply.status(500).send({ error: 'Error during ChatGPT request' });
-      }
-    }
-
     try {
-      const vocalResponse = await askForVocal(prompt);
-      reply.send({ response: vocalResponse });
+      // Step 1: Get GPT response
+      const gptResponse = await askChatGPT(prompt);
+      const answer = gptResponse.choices[0].message.content;
+
+      console.log(answer)
+
+      let audio_response_s3_url = null;
+
+      // Step 2: Generate vocal response if requested
+      if (withVocalAnswer) {
+        const vocalResponse = await askForVocal(answer);
+        audio_response_s3_url = vocalResponse.fileUrl; // URL from the vocal response
+      }
+
+      console.log("after vocal")
+      // Step 3: Save ask in the database, associating it with the user
+      const ask_date = new Date().toISOString();
+      await new Promise((resolve, reject) => {
+        db.run(
+          "INSERT INTO asks (user_id, question, answer, audio_response_s3_url, ask_date) VALUES (?, ?, ?, ?, ?)",
+          [userId, prompt, answer, audio_response_s3_url, ask_date],
+          function (err) {
+            if (err) reject(err);
+            else resolve(this.lastID);
+          }
+        );
+      });
+
+      console.log()
+
+      // Step 4: Send response with question, answer, and audio_response_s3_url
+      return reply.send({
+        question: prompt,
+        answer: answer,
+        audio_response_s3_url: audio_response_s3_url
+      });
     } catch (error) {
-      console.error('Error during vocal request:', error);
-      reply.status(500).send({ error: 'Error during ChatGPT vocal request' });
+      console.error('Error during the ChatGPT or vocal process:', error);
+      return reply.status(500).send({ error: 'An error occurred while processing your request' });
     }
   });
 

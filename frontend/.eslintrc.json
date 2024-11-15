@@ -1,19 +1,16 @@
 {
-  "env": {
-    "browser": true,
-    "node": true
-  },
+  "parser": "@typescript-eslint/parser",
   "extends": [
-    "eslint:recommended",
-    "plugin:vue/vue3-recommended",
-    "@vue/typescript"
+    "plugin:@typescript-eslint/recommended",
+    "eslint:recommended"
   ],
-  "parserOptions": {
-    "ecmaVersion": 2020,
-    "sourceType": "module",
-    "parser": "@typescript-eslint/parser"
-  },
-  "rules": {
-    "no-unused-vars": "off"
-  }
+  "plugins": ["@typescript-eslint"],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "parserOptions": {
+        "project": "./tsconfig.json"
+      }
+    }
+  ]
 }
