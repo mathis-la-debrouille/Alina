@@ -15,7 +15,7 @@ const mqttBroker = aedes();
 const mqttsServer = createServer(mqttBroker);
 
 // Listen for MQTT connections on port 8883
-mqttsServer.listen(8883, () => {
+mqttsServer.listen(1883, () => {
   console.log('MQTTS server is running behind the ALB on mqtts://mqtt.alina.massiveusage.com:443');
 });
 
