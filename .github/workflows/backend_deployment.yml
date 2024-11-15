@@ -42,7 +42,7 @@ jobs:
               After=network.target
 
               [Service]
-              ExecStart=/usr/bin/npm i && /usr/bin/npm run start
+              ExecStart=sudo /usr/bin/npm i && /usr/bin/npm start
               WorkingDirectory=/home/ubuntu/alina/backend
               Restart=always
               User=ubuntu
