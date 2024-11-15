@@ -40,5 +40,6 @@ jobs:
             cd /home/ubuntu/alina/frontend
             npm i
             npm run build
+            rm -rf /var/www/alina-frontend/dist
             sudo mkdir -p /var/www/alina-frontend
             sudo cp -r dist /var/www/alina-frontend
