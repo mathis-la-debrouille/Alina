@@ -3,59 +3,59 @@ name: Deploy Backend to EC2
 on:
   push:
     branches:
-      - main  # Déclenche l'action sur la branche principale
+      - main # Déclenche l'action sur la branche principale
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Install SSH key
-      uses: webfactory/ssh-agent@v0.5.4
-      with:
-        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-    - name: Copy backend to EC2
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.EC2_IP }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: "backend/*"
-        target: "/home/ubuntu/alina/"
+      - name: Copy backend to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "backend/*"
+          target: "/home/ubuntu/alina/"
 
-    - name: Setup or restart backend service
-      uses: appleboy/ssh-action@v0.1.8
-      with:
-        host: ${{ secrets.EC2_IP }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          # Créer le service systemd si non existant
-          sudo -su root
-          if [ ! -f /etc/systemd/system/backend.service ]; then
-            echo "[Unit]
-            Description=Backend Service
-            After=network.target
+      - name: Setup or restart backend service
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Créer le service systemd si non existant
+            sudo -su root
+            if [ ! -f /etc/systemd/system/backend.service ]; then
+              echo "[Unit]
+              Description=Backend Service
+              After=network.target
 
-            [Service]
-            ExecStart=/usr/bin/npm run start
-            WorkingDirectory=/home/ubuntu/alina/backend
-            Restart=always
-            User=ubuntu
-            Environment=NODE_ENV=production
-            Environment=PORT=3300
+              [Service]
+              ExecStart=/usr/bin/npm i && /usr/bin/npm run start
+              WorkingDirectory=/home/ubuntu/alina/backend
+              Restart=always
+              User=ubuntu
+              Environment=NODE_ENV=production
+              Environment=PORT=3300
 
-            [Install]
-            WantedBy=multi-user.target" | sudo tee /etc/systemd/system/backend.service
+              [Install]
+              WantedBy=multi-user.target" | sudo tee /etc/systemd/system/backend.service
 
-            # Reload systemd to apply changes
-            sudo systemctl daemon-reload
-            sudo systemctl enable backend
-          fi
+              # Reload systemd to apply changes
+              sudo systemctl daemon-reload
+              sudo systemctl enable backend
+            fi
 
-          # Restart the service to apply new changes after deployment
-          sudo systemctl restart backend
+            # Restart the service to apply new changes after deployment
+            sudo systemctl restart backend
