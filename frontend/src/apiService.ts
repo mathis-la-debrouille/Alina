@@ -1,7 +1,7 @@
 // src/apiService.ts
 import axios, { AxiosResponse } from 'axios';
 
-const API_URL = 'https://api.alina.massiveusage.com/';
+const API_URL = 'https://api.alina.massiveusage.com';
 
 const api = axios.create({
   baseURL: API_URL,
