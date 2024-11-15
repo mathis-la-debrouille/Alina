@@ -6,33 +6,33 @@ const userRoutes = require('./routes/userRoutes');
 const cors = require('@fastify/cors');
 
 //MQTTS
-const aedes = require('aedes');
-const { createServer } = require('aedes-server-factory');
-// Create MQTT broker
-const mqttBroker = aedes();
+// const aedes = require('aedes');
+// const { createServer } = require('aedes-server-factory');
+// // Create MQTT broker
+// const mqttBroker = aedes();
 
-// Create the MQTT server listening on 8883 (behind the ALB)
-const mqttsServer = createServer(mqttBroker);
+// // Create the MQTT server listening on 8883 (behind the ALB)
+// const mqttsServer = createServer(mqttBroker);
 
-// Listen for MQTT connections on port 8883
-mqttsServer.listen(1883, () => {
-  console.log('MQTTS server is running behind the ALB on mqtts://mqtt.alina.massiveusage.com:443');
-});
+// // Listen for MQTT connections on port 8883
+// mqttsServer.listen(1883, () => {
+//   console.log('MQTTS server is running behind the ALB on mqtts://mqtt.alina.massiveusage.com:443');
+// });
 
-// Log events
-mqttBroker.on('clientReady', (client) => {
-  console.log(`Client connected: ${client.id}`);
-});
+// // Log events
+// mqttBroker.on('clientReady', (client) => {
+//   console.log(`Client connected: ${client.id}`);
+// });
 
-mqttBroker.on('clientDisconnect', (client) => {
-  console.log(`Client disconnected: ${client.id}`);
-});
+// mqttBroker.on('clientDisconnect', (client) => {
+//   console.log(`Client disconnected: ${client.id}`);
+// });
 
-mqttBroker.on('publish', (packet, client) => {
-  if (client) {
-    console.log(`Message published by ${client.id}:`, packet.payload.toString());
-  }
-});
+// mqttBroker.on('publish', (packet, client) => {
+//   if (client) {
+//     console.log(`Message published by ${client.id}:`, packet.payload.toString());
+//   }
+// });
 
 
 fastify.register(cors, {
