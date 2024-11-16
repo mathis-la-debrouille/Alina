@@ -5,34 +5,41 @@ const askRoutes = require('./routes/askRoute');
 const userRoutes = require('./routes/userRoutes');
 const cors = require('@fastify/cors');
 
-//MQTTS
-// const aedes = require('aedes');
-// const { createServer } = require('aedes-server-factory');
-// // Create MQTT broker
-// const mqttBroker = aedes();
+const mqtt = require('mqtt');
 
-// // Create the MQTT server listening on 8883 (behind the ALB)
-// const mqttsServer = createServer(mqttBroker);
+// MQTT Configuration
+const mqttOptions = {
+  protocol: 'mqtts', // Secure protocol
+  host: 'mqtt.alina.massiveusage.com',
+  port: 8883,
+  ca: [require('fs').readFileSync('/home/ubuntu/alina/ca.crt')],
+};
 
-// // Listen for MQTT connections on port 8883
-// mqttsServer.listen(1883, () => {
-//   console.log('MQTTS server is running behind the ALB on mqtts://mqtt.alina.massiveusage.com:443');
-// });
+const mqttClient = mqtt.connect(mqttOptions);
 
-// // Log events
-// mqttBroker.on('clientReady', (client) => {
-//   console.log(`Client connected: ${client.id}`);
-// });
+// MQTT Connection
+mqttClient.on('connect', () => {
+  console.log('Connected to MQTT broker');
 
-// mqttBroker.on('clientDisconnect', (client) => {
-//   console.log(`Client disconnected: ${client.id}`);
-// });
+  // Subscribe to a test topic
+  mqttClient.subscribe('test/topic', (err) => {
+    if (err) {
+      console.error('Subscription error:', err);
+    } else {
+      console.log('Subscribed to test/topic');
+    }
+  });
+});
 
-// mqttBroker.on('publish', (packet, client) => {
-//   if (client) {
-//     console.log(`Message published by ${client.id}:`, packet.payload.toString());
-//   }
-// });
+// Handle incoming messages
+mqttClient.on('message', (topic, message) => {
+  console.log(`Message received on topic ${topic}:`, message.toString());
+});
+
+// Error handling
+mqttClient.on('error', (err) => {
+  console.error('MQTT connection error:', err);
+});
 
 
 fastify.register(cors, {
