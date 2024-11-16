@@ -73,6 +73,7 @@ interface AskResponse {
 interface AskRequest {
   prompt: string;
   withVocalAnswer?: boolean;
+  voiceGender: string | null;
 }
 // API Functions
 export const signup = (data: SignupData): Promise<AxiosResponse<TokenResponse>> => api.post('/signup', data);

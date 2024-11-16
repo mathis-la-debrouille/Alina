@@ -47,12 +47,21 @@ async function askChatGPT(prompt) {
   }
 }
 
-async function askForVocal(gptResponse)
+async function askForVocal(gptResponse, voiceGender)
 {
   console.log("GROS Check")
+
+  const voices = {
+    "female": "cgSgspJ2msm6clMCkdW9",
+    "male": "onwK4e9ZLuTAKqWW03F9"
+  }
+
+
+  const voiceToUse = !voiceGender ? voices["female"] : [voiceGender]
+
   try {
     const voiceResponse = await axios.post(
-      'https://api.elevenlabs.io/v1/text-to-speech/cgSgspJ2msm6clMCkdW9',
+      'https://api.elevenlabs.io/v1/text-to-speech/'+voiceToUse,
       {
         voice_settings: {
           stability: 0.7,

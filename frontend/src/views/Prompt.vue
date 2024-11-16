@@ -182,7 +182,8 @@ export default {
       try {
         await postAsk({
           prompt: userPrompt.value,
-          withVocalAnswer: true // Adjust if you want this to be dynamic
+          withVocalAnswer: true,// Adjust if you want this to be dynamic
+          voiceGender: selectedGender.value
         });
         userPrompt.value = ""; // Clear input after submission
         await fetchUserAsks(); // Refresh the feed after adding a new ask
