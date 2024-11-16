@@ -4,6 +4,7 @@ const { transcribeAudio } = require('../audioService'); // Import audio transcri
 const fastifyMultipart = require('@fastify/multipart');
 const { authenticate } = require('../auth'); // Import the authenticate middleware
 const db = require('../db');
+const mqttClient = require('../mqttClient'); // Import shared MQTT client
 
 async function askRoutes(fastify, options) {
   // Register the multipart plugin for file uploads
@@ -19,6 +20,18 @@ async function askRoutes(fastify, options) {
     }
 
     try {
+      const alinaId = await new Promise((resolve, reject) => {
+        db.get("SELECT alina_id FROM users WHERE id = ?", [userId], (err, row) => {
+          if (err) reject(err);
+          else if (!row) reject(new Error('User not found'));
+          else resolve(row.alina_id);
+        });
+      });
+
+      if (!alinaId) {
+        return reply.status(400).send({ error: 'User does not have an alina_id assigned' });
+      }
+
       // Step 1: Get GPT response
       const gptResponse = await askChatGPT(prompt);
       const answer = gptResponse.choices[0].message.content;
@@ -47,7 +60,16 @@ async function askRoutes(fastify, options) {
         );
       });
 
-      console.log()
+      if (withVocalAnswer && audio_response_s3_url && alinaId) {
+        const topic = `${alinaId}/audio_receive`;
+        mqttClient.publish(topic, JSON.stringify({ audioUrl: audio_response_s3_url }), (err) => {
+          if (err) {
+            console.error(`Failed to publish to MQTT topic ${topic}:`, err);
+          } else {
+            console.log(`Published audio URL to MQTT topic ${topic}`);
+          }
+        });
+      }
 
       // Step 4: Send response with question, answer, and audio_response_s3_url
       return reply.send({

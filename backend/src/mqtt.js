@@ -5,14 +5,7 @@ const db = require('./db');
 const { askForVocal } = require('./asksystem');
 const { transcribeAudio } = require('./audioService');
 
-const mqttOptions = {
-  protocol: 'mqtts',
-  host: 'mqtt.alina.massiveusage.com',
-  port: 8883,
-  ca: [fs.readFileSync('/home/ubuntu/alina/ca.crt')],
-};
-
-const mqttClient = mqtt.connect(mqttOptions);
+const mqttClient = require('./mqttClient'); // Import shared MQTT client
 
 // Connect to the MQTT broker
 mqttClient.on('connect', () => {

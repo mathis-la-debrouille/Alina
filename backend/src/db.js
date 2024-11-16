@@ -38,7 +38,7 @@ db.serialize(() => {
 
   // Create default admin user with hashed password
   const adminPassword = bcrypt.hashSync('alina654__admin', 10);
-  db.run(`INSERT OR IGNORE INTO users (firstname, email, password, role) VALUES ('adminalina', 'admin@alina.com', ?, 'admin')`, [adminPassword]);
+  db.run(`INSERT OR IGNORE INTO users (firstname, email, password, role, alina_id) VALUES ('adminalina', 'admin@alina.com', ?, 'admin', 45)`, [adminPassword]);
 });
 
 module.exports = db;

@@ -55,10 +55,12 @@ async function askForVocal(gptResponse)
       'https://api.elevenlabs.io/v1/text-to-speech/cgSgspJ2msm6clMCkdW9',
       {
         voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-          style: 0
+          stability: 0.7,
+          similarity_boost: 0.1,
+          style: 0.1,
         },
+        language_code: 'fr',
+        model_id: 'eleven_turbo_v2_5',
         text: gptResponse
       },
       {
