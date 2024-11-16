@@ -12,7 +12,7 @@ async function askRoutes(fastify, options) {
 
   // Route for interacting with ChatGPT
   fastify.post('/ask', { preHandler: [authenticate] }, async (request, reply) => {
-    const { prompt, withVocalAnswer,  voiceGender} = request.body;
+    const { prompt, withVocalAnswer,  voiceGender, accentOption} = request.body;
     const userId = request.user.id; // Extract user ID from the token
 
     if (!prompt) {
@@ -42,7 +42,7 @@ async function askRoutes(fastify, options) {
 
       // Step 2: Generate vocal response if requested
       if (withVocalAnswer) {
-        const vocalResponse = await askForVocal(answer, voiceGender);
+        const vocalResponse = await askForVocal(answer, voiceGender, accentOption);
         audio_response_s3_url = vocalResponse.fileUrl; // URL from the vocal response
       }
 

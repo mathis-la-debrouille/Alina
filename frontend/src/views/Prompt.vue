@@ -118,9 +118,9 @@ export default {
     const selectedAge = ref(null);
 
     const accentOptions = [
-      { label: 'French', value: 'french' },
-      { label: 'English', value: 'english' },
-      { label: 'Spanish', value: 'spanish' }
+      { label: 'French', value: 'fr' },
+      { label: 'English', value: 'en' },
+      { label: 'Spanish', value: 'es' }
     ];
 
     const genderOptions = [
@@ -183,7 +183,8 @@ export default {
         await postAsk({
           prompt: userPrompt.value,
           withVocalAnswer: true,// Adjust if you want this to be dynamic
-          voiceGender: selectedGender.value
+          voiceGender: selectedGender.value,
+          accentOption: selectedAccent.value,
         });
         userPrompt.value = ""; // Clear input after submission
         await fetchUserAsks(); // Refresh the feed after adding a new ask

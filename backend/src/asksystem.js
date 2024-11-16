@@ -47,7 +47,7 @@ async function askChatGPT(prompt) {
   }
 }
 
-async function askForVocal(gptResponse, voiceGender)
+async function askForVocal(gptResponse, voiceGender, accentOption)
 {
   console.log("GROS Check")
 
@@ -56,8 +56,7 @@ async function askForVocal(gptResponse, voiceGender)
     "male": "onwK4e9ZLuTAKqWW03F9"
   }
 
-
-  const voiceToUse = !voiceGender ? voices["female"] : [voiceGender]
+  const voiceToUse = !voiceGender || voiceGender == "female" ? "cgSgspJ2msm6clMCkdW9": "onwK4e9ZLuTAKqWW03F9";
 
   try {
     const voiceResponse = await axios.post(
@@ -68,7 +67,7 @@ async function askForVocal(gptResponse, voiceGender)
           similarity_boost: 0.1,
           style: 0.1,
         },
-        language_code: 'fr',
+        language_code: accentOption ?? 'fr',
         model_id: 'eleven_turbo_v2_5',
         text: gptResponse
       },
